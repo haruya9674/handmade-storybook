@@ -1,27 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Story App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>寝る前のストーリー読み上げ</title>
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: #f5f7fb;
+  padding: 20px;
+}
+h2 { color: #2e7d32; }
+textarea {
+  width: 100%;
+  height: 200px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+button:hover { background: #388E3C; }
+</style>
 </head>
 <body onbeforeunload="stopVoice()">
 
-<h2 id="title">📖 Story</h2>
-<button onclick="speak()">🔊 Listen story</button>
+<h2>🌙 優しい声でストーリーを読み上げ</h2>
+<textarea id="story" placeholder="ここに寝る前のストーリーを書いてください..."></textarea>
+<br>
+<button onclick="speak()">🔊 優しい声で読み上げ</button>
+<button onclick="stopVoice()">⏹ 停止</button>
 
-<div class="story" id="story"></div>
-
-<div class="quiz" id="quiz"></div>
-
-<button onclick="check()">Check Answer</button>
-<div id="result"></div>
-
-<script src="script.js"></script>
 <script>
-  // 最初に読み込むストーリーを指定
-  loadStory("rabbit_turtle");
+let voices = [];
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+
+function speak(){
+  stopVoice();
+  const text = document.getElementById("story").value;
+  if(!text.trim()){
+    alert("ストーリーを入力してください！");
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(text);
+
+  // 優しい女性の声を選択（例: Google 日本語, Microsoft Haruka, etc.）
+  const femaleVoice = voices.find(v => 
+    v.lang.startsWith("ja") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v => v.lang.startsWith("ja"));
+
+  if(femaleVoice) u.voice = femaleVoice;
+
+  // ゆっくり＆柔らかい設定
+  u.lang = "ja-JP";   // 日本語
+  u.rate = 0.7;       // 読み上げ速度（遅め）
+  u.pitch = 1.1;      // 少し高めで優しい声質
+
+  speechSynthesis.speak(u);
+}
+
+function stopVoice(){
+  speechSynthesis.cancel();
+}
 </script>
+
 </body>
 </html>
