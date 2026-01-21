@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bedtime Story Reader with YouTube BGM & Save</title>
+<title>Bedtime Story Reader with YouTube BGM & Story Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -35,6 +35,26 @@ button.active {
   background: #d32f2f; /* 再生中は赤系で表示 */
 }
 select { margin-left: 10px; }
+#storyList {
+  margin-top: 20px;
+  background: #2e2e3f;
+  padding: 10px;
+  border-radius: 8px;
+}
+#storyList h3 { color: #a5d6a7; }
+.storyItem {
+  margin: 5px 0;
+  padding: 5px;
+  background: #3e3e4f;
+  border-radius: 6px;
+}
+.storyItem button {
+  margin-left: 5px;
+  background: #607d8b;
+}
+.storyItem button:hover {
+  background: #455a64;
+}
 </style>
 <script src="https://www.youtube.com/iframe_api"></script>
 </head>
@@ -54,8 +74,12 @@ select { margin-left: 10px; }
 <button onclick="stopVoice()">⏹ Stop</button>
 <button id="bgmBtn" onclick="toggleBGM()">🎵 Toggle BGM</button>
 <button onclick="saveStory()">💾 Save Story</button>
-<button onclick="deleteStory()">🗑 Delete Story</button>
-<button onclick="loadStory()">📂 Load Story</button>
+
+<!-- Saved stories list -->
+<div id="storyList">
+  <h3>📚 Saved Stories</h3>
+  <div id="stories"></div>
+</div>
 
 <!-- YouTube player container -->
 <div id="player"></div>
@@ -108,31 +132,43 @@ function toggleBGM(){
   }
 }
 
-// --- 保存／削除／読み込み機能 ---
+// --- 複数ストーリー管理 ---
 function saveStory(){
   const text = document.getElementById("story").value;
   if(!text.trim()){
     alert("No story to save!");
     return;
   }
-  localStorage.setItem("savedStory", text);
+  let stories = JSON.parse(localStorage.getItem("stories") || "[]");
+  stories.push(text);
+  localStorage.setItem("stories", JSON.stringify(stories));
   alert("Story saved!");
+  renderStories();
 }
 
-function deleteStory(){
-  localStorage.removeItem("savedStory");
-  alert("Saved story deleted!");
+function deleteStory(index){
+  let stories = JSON.parse(localStorage.getItem("stories") || "[]");
+  stories.splice(index,1);
+  localStorage.setItem("stories", JSON.stringify(stories));
+  renderStories();
 }
 
-function loadStory(){
-  const saved = localStorage.getItem("savedStory");
-  if(saved){
-    document.getElementById("story").value = saved;
-    alert("Story loaded!");
-  } else {
-    alert("No saved story found.");
-  }
+function renderStories(){
+  const container = document.getElementById("stories");
+  container.innerHTML = "";
+  let stories = JSON.parse(localStorage.getItem("stories") || "[]");
+  stories.forEach((s, i) => {
+    const div = document.createElement("div");
+    div.className = "storyItem";
+    div.innerHTML = `<span>${s.substring(0,30)}...</span>
+      <button onclick="speak(\`${s.replace(/`/g,'\\`')}\`)">▶ Play</button>
+      <button onclick="deleteStory(${i})">🗑 Delete</button>`;
+    container.appendChild(div);
+  });
 }
+
+// 初期表示
+renderStories();
 </script>
 
 </body>
