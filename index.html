@@ -53,7 +53,7 @@ select { margin-left: 10px; }
 <!-- YouTube iframe for BGM -->
 <div id="bgmContainer" style="display:none;">
   <iframe id="bgmFrame" width="0" height="0" 
-    src="https://www.youtube.com/embed/VIDEO_ID?autoplay=1&loop=1&playlist=VIDEO_ID"
+    src="https://www.youtube.com/embed/B1go9DPd_xg?autoplay=1&loop=1&playlist=B1go9DPd_xg"
     frameborder="0" allow="autoplay">
   </iframe>
 </div>
@@ -97,9 +97,8 @@ function toggleBGM(){
     bgmDiv.style.display = "block"; // show iframe → autoplay starts
   } else {
     bgmDiv.style.display = "none";  // hide iframe → stops playback
-    // reload iframe to stop sound
     const frame = document.getElementById("bgmFrame");
-    frame.src = frame.src;
+    frame.src = frame.src; // reload to stop sound
   }
 }
 </script>
