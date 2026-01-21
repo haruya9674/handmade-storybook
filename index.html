@@ -31,9 +31,7 @@ button, select {
   cursor: pointer;
 }
 button:hover, select:hover { background: #388E3C; }
-button.active {
-  background: #d32f2f; /* 再生中は赤系で表示 */
-}
+button.active { background: #d32f2f; }
 select { margin-left: 10px; }
 #storyList {
   margin-top: 20px;
@@ -52,12 +50,9 @@ select { margin-left: 10px; }
   margin-left: 5px;
   background: #607d8b;
 }
-.storyItem button:hover {
-  background: #455a64;
-}
-.volumeControl {
-  margin-top: 10px;
-}
+.storyItem button:hover { background: #455a64; }
+.volumeControl { margin-top: 10px; }
+.volumeLabel { margin-left: 8px; color: #a5d6a7; }
 </style>
 <script src="https://www.youtube.com/iframe_api"></script>
 </head>
@@ -81,7 +76,8 @@ select { margin-left: 10px; }
 <!-- Volume control -->
 <div class="volumeControl">
   <label for="volume">🔊 BGM Volume:</label>
-  <input type="range" id="volume" min="0" max="100" value="20" oninput="setVolume(this.value)">
+  <input type="range" id="volume" min="0" max="100" value="25" oninput="setUserVolume(this.value)">
+  <span id="volumeVal" class="volumeLabel">25%</span>
 </div>
 
 <!-- Saved stories list -->
@@ -94,6 +90,7 @@ select { margin-left: 10px; }
 <div id="player"></div>
 
 <script>
+/* ---------- Speech ---------- */
 let voices = [];
 speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 
@@ -106,31 +103,59 @@ function speak(text){
     return;
   }
   const u = new SpeechSynthesisUtterance(storyText);
+
   const femaleVoice = voices.find(v => v.lang === lang && v.name.toLowerCase().includes("female"))
                      || voices.find(v => v.lang === lang);
   if(femaleVoice) u.voice = femaleVoice;
+
   u.lang = lang;
-  u.rate = 0.35;   // very slow pace
-  u.pitch = 1.0;   // gentle tone
+  u.rate = 0.35;
+  u.pitch = 1.0;
+
+  // ダッキング開始
+  startDucking();
+
+  u.onend = restoreVolume;
+  u.onerror = restoreVolume;
+  u.onpause = restoreVolume;
+
   speechSynthesis.speak(u);
 }
 
-function stopVoice(){ speechSynthesis.cancel(); }
+function stopVoice(){
+  speechSynthesis.cancel();
+  restoreVolume();
+}
 
-// YouTube IFrame API
+/* ---------- YouTube BGM ---------- */
 let player;
+let playerReady = false;
+let userVolume = 25;     // ユーザーが望む通常音量（0-100）
+const duckVolume = 15;   // 読み上げ中の一時的な小音量（0-100）
+
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     height: '0',
     width: '0',
-    videoId: 'B1go9DPd_xg', // ←動画ID
-    playerVars: { 'loop': 1, 'playlist': 'B1go9DPd_xg' }
+    videoId: 'B1go9DPd_xg',
+    playerVars: { 'loop': 1, 'playlist': 'B1go9DPd_xg' },
+    events: {
+      'onReady': (e) => {
+        playerReady = true;
+        player.setVolume(userVolume); // 準備完了後に反映
+      }
+    }
   });
 }
 
 function toggleBGM(){
   const btn = document.getElementById("bgmBtn");
-  if(player && player.getPlayerState() !== YT.PlayerState.PLAYING){
+  if(!playerReady){ return; }
+
+  const state = player.getPlayerState();
+  if(state !== YT.PlayerState.PLAYING){
+    player.unMute();              // 念のためミュート解除
+    player.setVolume(userVolume); // 再生前に希望音量を適用
     player.playVideo();
     btn.classList.add("active");
     btn.innerText = "🎵 BGM Playing...";
@@ -141,14 +166,34 @@ function toggleBGM(){
   }
 }
 
-// --- 音量調整 ---
-function setVolume(val){
-  if(player){
-    player.setVolume(val); // 0〜100 の範囲
+/* ---------- Volume control ---------- */
+function setUserVolume(val){
+  userVolume = Math.max(0, Math.min(100, Number(val)));
+  document.getElementById('volumeVal').innerText = userVolume + '%';
+
+  // ダッキング中は即座に反映せず、通常時のみ反映
+  if(playerReady && !isDucking){
+    player.setVolume(userVolume);
   }
 }
 
-// --- 複数ストーリー管理 ---
+let isDucking = false;
+
+function startDucking(){
+  if(playerReady && player.getPlayerState() === YT.PlayerState.PLAYING){
+    isDucking = true;
+    player.setVolume(duckVolume);
+  }
+}
+
+function restoreVolume(){
+  if(playerReady){
+    isDucking = false;
+    player.setVolume(userVolume);
+  }
+}
+
+/* ---------- Story manager ---------- */
 function saveStory(){
   const text = document.getElementById("story").value;
   if(!text.trim()){
