@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Story App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onbeforeunload="stopVoice()">
+
+<h2 id="title">📖 Story</h2>
+<button onclick="speak()">🔊 Listen story</button>
+
+<div class="story" id="story"></div>
+
+<div class="quiz" id="quiz"></div>
+
+<button onclick="check()">Check Answer</button>
+<div id="result"></div>
+
+<script src="script.js"></script>
+<script>
+  // 最初に読み込むストーリーを指定
+  loadStory("rabbit_turtle");
+</script>
+</body>
+</html>
