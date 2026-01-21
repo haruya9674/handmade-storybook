@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bedtime Story Reader</title>
+<title>Bedtime Story Reader with BGM</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -31,9 +31,7 @@ button, select {
   cursor: pointer;
 }
 button:hover, select:hover { background: #388E3C; }
-select {
-  margin-left: 10px;
-}
+select { margin-left: 10px; }
 </style>
 </head>
 <body onbeforeunload="stopVoice()">
@@ -50,15 +48,17 @@ select {
 <br>
 <button onclick="speak()">🔊 Read Story</button>
 <button onclick="stopVoice()">⏹ Stop</button>
+<button onclick="toggleBGM()">🎵 Toggle BGM</button>
+
+<!-- BGM audio element -->
+<audio id="bgm" loop>
+  <!-- 好きなBGMファイルをここに指定（例: gentle-music.mp3） -->
+  <source src="gentle-music.mp3" type="audio/mpeg">
+</audio>
 
 <script>
 let voices = [];
-
-// Load voices properly
-function loadVoices(){
-  voices = speechSynthesis.getVoices();
-}
-speechSynthesis.onvoiceschanged = loadVoices;
+speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 
 function speak(){
   stopVoice();
@@ -71,14 +71,14 @@ function speak(){
 
   const u = new SpeechSynthesisUtterance(text);
 
-  // Try to select a gentle female voice
+  // Prefer gentle female voice if available
   const femaleVoice = voices.find(v => v.lang === lang && v.name.toLowerCase().includes("female"))
                      || voices.find(v => v.lang === lang);
 
   if(femaleVoice) u.voice = femaleVoice;
 
   u.lang = lang;
-  u.rate = 0.4;   // very slow pace for bedtime
+  u.rate = 0.4;   // very slow pace
   u.pitch = 1.0;  // natural gentle tone
 
   speechSynthesis.speak(u);
@@ -86,6 +86,16 @@ function speak(){
 
 function stopVoice(){
   speechSynthesis.cancel();
+}
+
+function toggleBGM(){
+  const bgm = document.getElementById("bgm");
+  if(bgm.paused){
+    bgm.volume = 0.2; // さりげなく小さめの音量
+    bgm.play();
+  } else {
+    bgm.pause();
+  }
 }
 </script>
 
