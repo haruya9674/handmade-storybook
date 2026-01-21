@@ -1,0 +1,19 @@
+{
+  "rabbit_turtle": {
+    "title": "🐰🐢 The Rabbit and the Turtle",
+    "story": "One sunny day, a rabbit met a turtle in the forest...\nSlow and steady wins the race.",
+    "quiz": [
+      {"q":"Who were in the race?","choices":["Two rabbits","A rabbit and a turtle"],"answer":1},
+      {"q":"Who was fast?","choices":["The rabbit","The turtle"],"answer":0},
+      {"q":"Why did the rabbit lose?","choices":["He slept","He was slow"],"answer":0}
+    ]
+  },
+  "lion_mouse": {
+    "title": "🦁🐭 The Lion and the Mouse",
+    "story": "One day, a mighty lion was sleeping in the forest...\nEven the smallest friend can be the greatest help.",
+    "quiz": [
+      {"q":"Who was sleeping?","choices":["The lion","The mouse"],"answer":0},
+      {"q":"Who helped the lion escape?","choices":["The mouse","The hunter"],"answer":0}
+    ]
+  }
+}
