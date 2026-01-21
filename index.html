@@ -36,6 +36,7 @@ button.active {
 }
 select { margin-left: 10px; }
 </style>
+<script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body onbeforeunload="stopVoice()">
 
@@ -53,13 +54,8 @@ select { margin-left: 10px; }
 <button onclick="stopVoice()">⏹ Stop</button>
 <button id="bgmBtn" onclick="toggleBGM()">🎵 Toggle BGM</button>
 
-<!-- YouTube iframe for BGM -->
-<div id="bgmContainer" style="display:none;">
-  <iframe id="bgmFrame" width="0" height="0" 
-    src=""
-    frameborder="0" allow="autoplay">
-  </iframe>
-</div>
+<!-- YouTube player container -->
+<div id="player"></div>
 
 <script>
 let voices = [];
@@ -73,41 +69,37 @@ function speak(){
     alert("Please write a story first!");
     return;
   }
-
   const u = new SpeechSynthesisUtterance(text);
-
   const femaleVoice = voices.find(v => v.lang === lang && v.name.toLowerCase().includes("female"))
                      || voices.find(v => v.lang === lang);
-
   if(femaleVoice) u.voice = femaleVoice;
-
   u.lang = lang;
   u.rate = 0.35;   // very slow pace
   u.pitch = 1.0;   // gentle tone
-
   speechSynthesis.speak(u);
 }
 
-function stopVoice(){
-  speechSynthesis.cancel();
+function stopVoice(){ speechSynthesis.cancel(); }
+
+// YouTube IFrame API
+let player;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    height: '0',
+    width: '0',
+    videoId: 'B1go9DPd_xg', // ←ここが動画ID
+    playerVars: { 'loop': 1, 'playlist': 'B1go9DPd_xg' }
+  });
 }
 
-// Toggle YouTube BGM
 function toggleBGM(){
-  const bgmDiv = document.getElementById("bgmContainer");
-  const bgmFrame = document.getElementById("bgmFrame");
   const btn = document.getElementById("bgmBtn");
-
-  if(bgmDiv.style.display === "none"){
-    // 再生開始
-    bgmDiv.style.display = "block";
-    bgmFrame.src = "https://www.youtube.com/embed/B1go9DPd_xg?autoplay=1&loop=1&playlist=B1go9DPd_xg";
+  if(player && player.getPlayerState() !== YT.PlayerState.PLAYING){
+    player.playVideo();
     btn.classList.add("active");
     btn.innerText = "🎵 BGM Playing...";
   } else {
-    // 停止
-    bgmDiv.style.display = "none";
-    bgmFrame.src = ""; // srcを空にして停止
+    player.pauseVideo();
     btn.classList.remove("active");
     btn.innerText = "🎵 Toggle BGM";
   }
