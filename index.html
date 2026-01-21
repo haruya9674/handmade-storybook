@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bedtime Story Reader with BGM</title>
+<title>Bedtime Story Reader with YouTube BGM</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -19,6 +19,7 @@ textarea {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 16px;
+  resize: vertical;
 }
 button, select {
   background: #4CAF50;
@@ -30,6 +31,7 @@ button, select {
   cursor: pointer;
 }
 button:hover, select:hover { background: #388E3C; }
+select { margin-left: 10px; }
 </style>
 </head>
 <body onbeforeunload="stopVoice()">
@@ -48,11 +50,13 @@ button:hover, select:hover { background: #388E3C; }
 <button onclick="stopVoice()">⏹ Stop</button>
 <button onclick="toggleBGM()">🎵 Toggle BGM</button>
 
-<!-- BGM audio element -->
-<audio id="bgm" loop>
-  <!-- ここに心地よいBGMファイルを置いてください -->
-  <source src="gentle-bgm.mp3" type="audio/mpeg">
-</audio>
+<!-- YouTube iframe for BGM -->
+<div id="bgmContainer" style="display:none;">
+  <iframe id="bgmFrame" width="0" height="0" 
+    src="https://www.youtube.com/embed/VIDEO_ID?autoplay=1&loop=1&playlist=VIDEO_ID"
+    frameborder="0" allow="autoplay">
+  </iframe>
+</div>
 
 <script>
 let voices = [];
@@ -86,15 +90,16 @@ function stopVoice(){
   speechSynthesis.cancel();
 }
 
+// Toggle YouTube BGM
 function toggleBGM(){
-  const bgm = document.getElementById("bgm");
-  if(bgm.paused){
-    bgm.volume = 0.2; // soft volume
-    bgm.play().catch(err => {
-      console.log("Autoplay blocked, must click button:", err);
-    });
+  const bgmDiv = document.getElementById("bgmContainer");
+  if(bgmDiv.style.display === "none"){
+    bgmDiv.style.display = "block"; // show iframe → autoplay starts
   } else {
-    bgm.pause();
+    bgmDiv.style.display = "none";  // hide iframe → stops playback
+    // reload iframe to stop sound
+    const frame = document.getElementById("bgmFrame");
+    frame.src = frame.src;
   }
 }
 </script>
