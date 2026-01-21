@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Bedtime Story Reader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
   font-family: system-ui, sans-serif;
@@ -18,6 +19,7 @@ textarea {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 16px;
+  resize: vertical;
 }
 button, select {
   background: #4CAF50;
@@ -29,6 +31,9 @@ button, select {
   cursor: pointer;
 }
 button:hover, select:hover { background: #388E3C; }
+select {
+  margin-left: 10px;
+}
 </style>
 </head>
 <body onbeforeunload="stopVoice()">
@@ -48,8 +53,41 @@ button:hover, select:hover { background: #388E3C; }
 
 <script>
 let voices = [];
-speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
+
+// Load voices properly
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+}
+speechSynthesis.onvoiceschanged = loadVoices;
 
 function speak(){
   stopVoice();
-  const text = document.getElementById("
+  const text = document.getElementById("story").value;
+  const lang = document.getElementById("lang").value;
+  if(!text.trim()){
+    alert("Please write a story first!");
+    return;
+  }
+
+  const u = new SpeechSynthesisUtterance(text);
+
+  // Try to select a gentle female voice
+  const femaleVoice = voices.find(v => v.lang === lang && v.name.toLowerCase().includes("female"))
+                     || voices.find(v => v.lang === lang);
+
+  if(femaleVoice) u.voice = femaleVoice;
+
+  u.lang = lang;
+  u.rate = 0.4;   // very slow pace for bedtime
+  u.pitch = 1.0;  // natural gentle tone
+
+  speechSynthesis.speak(u);
+}
+
+function stopVoice(){
+  speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>
