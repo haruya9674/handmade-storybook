@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>寝る前のストーリー読み上げ</title>
+<title>Story Reader (EN/JP)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
   font-family: system-ui, sans-serif;
@@ -17,8 +18,9 @@ textarea {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 16px;
+  resize: vertical;
 }
-button {
+button, select {
   background: #4CAF50;
   color: white;
   border: none;
@@ -27,16 +29,26 @@ button {
   margin-top: 10px;
   cursor: pointer;
 }
-button:hover { background: #388E3C; }
+button:hover, select:hover { background: #388E3C; }
+select {
+  margin-left: 10px;
+}
 </style>
 </head>
 <body onbeforeunload="stopVoice()">
 
-<h2>🌙 優しい声でストーリーを読み上げ</h2>
-<textarea id="story" placeholder="ここに寝る前のストーリーを書いてください..."></textarea>
+<h2>🌙 Bedtime Story Reader</h2>
+<textarea id="story" placeholder="Write your story here..."></textarea>
 <br>
-<button onclick="speak()">🔊 優しい声で読み上げ</button>
-<button onclick="stopVoice()">⏹ 停止</button>
+<label for="lang">Choose voice language:</label>
+<select id="lang">
+  <option value="en-US">English (US)</option>
+  <option value="en-GB">English (UK)</option>
+  <option value="ja-JP">Japanese</option>
+</select>
+<br>
+<button onclick="speak()">🔊 Read Story</button>
+<button onclick="stopVoice()">⏹ Stop</button>
 
 <script>
 let voices = [];
@@ -49,23 +61,23 @@ speechSynthesis.onvoiceschanged = loadVoices;
 function speak(){
   stopVoice();
   const text = document.getElementById("story").value;
+  const lang = document.getElementById("lang").value;
   if(!text.trim()){
-    alert("ストーリーを入力してください！");
+    alert("Please write a story first!");
     return;
   }
   const u = new SpeechSynthesisUtterance(text);
 
-  // 優しい女性の声を選択（例: Google 日本語, Microsoft Haruka, etc.）
+  // Select a gentle female voice if available
   const femaleVoice = voices.find(v => 
-    v.lang.startsWith("ja") && v.name.toLowerCase().includes("female")
-  ) || voices.find(v => v.lang.startsWith("ja"));
+    v.lang === lang && v.name.toLowerCase().includes("female")
+  ) || voices.find(v => v.lang === lang);
 
   if(femaleVoice) u.voice = femaleVoice;
 
-  // ゆっくり＆柔らかい設定
-  u.lang = "ja-JP";   // 日本語
-  u.rate = 0.7;       // 読み上げ速度（遅め）
-  u.pitch = 1.1;      // 少し高めで優しい声質
+  u.lang = lang;
+  u.rate = 0.7;   // slow pace for bedtime
+  u.pitch = 1.1;  // slightly higher, gentle tone
 
   speechSynthesis.speak(u);
 }
