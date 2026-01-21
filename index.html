@@ -55,6 +55,9 @@ select { margin-left: 10px; }
 .storyItem button:hover {
   background: #455a64;
 }
+.volumeControl {
+  margin-top: 10px;
+}
 </style>
 <script src="https://www.youtube.com/iframe_api"></script>
 </head>
@@ -74,6 +77,12 @@ select { margin-left: 10px; }
 <button onclick="stopVoice()">⏹ Stop</button>
 <button id="bgmBtn" onclick="toggleBGM()">🎵 Toggle BGM</button>
 <button onclick="saveStory()">💾 Save Story</button>
+
+<!-- Volume control -->
+<div class="volumeControl">
+  <label for="volume">🔊 BGM Volume:</label>
+  <input type="range" id="volume" min="0" max="100" value="20" oninput="setVolume(this.value)">
+</div>
 
 <!-- Saved stories list -->
 <div id="storyList">
@@ -129,6 +138,13 @@ function toggleBGM(){
     player.pauseVideo();
     btn.classList.remove("active");
     btn.innerText = "🎵 Toggle BGM";
+  }
+}
+
+// --- 音量調整 ---
+function setVolume(val){
+  if(player){
+    player.setVolume(val); // 0〜100 の範囲
   }
 }
 
