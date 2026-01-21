@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bedtime Story Reader with YouTube BGM</title>
+<title>Bedtime Story Reader with YouTube BGM & Save</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
@@ -53,6 +53,9 @@ select { margin-left: 10px; }
 <button onclick="speak()">🔊 Read Story</button>
 <button onclick="stopVoice()">⏹ Stop</button>
 <button id="bgmBtn" onclick="toggleBGM()">🎵 Toggle BGM</button>
+<button onclick="saveStory()">💾 Save Story</button>
+<button onclick="deleteStory()">🗑 Delete Story</button>
+<button onclick="loadStory()">📂 Load Story</button>
 
 <!-- YouTube player container -->
 <div id="player"></div>
@@ -61,15 +64,15 @@ select { margin-left: 10px; }
 let voices = [];
 speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 
-function speak(){
+function speak(text){
   stopVoice();
-  const text = document.getElementById("story").value;
+  const storyText = text || document.getElementById("story").value;
   const lang = document.getElementById("lang").value;
-  if(!text.trim()){
+  if(!storyText.trim()){
     alert("Please write a story first!");
     return;
   }
-  const u = new SpeechSynthesisUtterance(text);
+  const u = new SpeechSynthesisUtterance(storyText);
   const femaleVoice = voices.find(v => v.lang === lang && v.name.toLowerCase().includes("female"))
                      || voices.find(v => v.lang === lang);
   if(femaleVoice) u.voice = femaleVoice;
@@ -87,7 +90,7 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     height: '0',
     width: '0',
-    videoId: 'B1go9DPd_xg', // ←ここが動画ID
+    videoId: 'B1go9DPd_xg', // ←動画ID
     playerVars: { 'loop': 1, 'playlist': 'B1go9DPd_xg' }
   });
 }
@@ -102,6 +105,32 @@ function toggleBGM(){
     player.pauseVideo();
     btn.classList.remove("active");
     btn.innerText = "🎵 Toggle BGM";
+  }
+}
+
+// --- 保存／削除／読み込み機能 ---
+function saveStory(){
+  const text = document.getElementById("story").value;
+  if(!text.trim()){
+    alert("No story to save!");
+    return;
+  }
+  localStorage.setItem("savedStory", text);
+  alert("Story saved!");
+}
+
+function deleteStory(){
+  localStorage.removeItem("savedStory");
+  alert("Saved story deleted!");
+}
+
+function loadStory(){
+  const saved = localStorage.getItem("savedStory");
+  if(saved){
+    document.getElementById("story").value = saved;
+    alert("Story loaded!");
+  } else {
+    alert("No saved story found.");
   }
 }
 </script>
