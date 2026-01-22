@@ -140,9 +140,10 @@ function onYouTubeIframeAPIReady() {
     videoId: 'B1go9DPd_xg',
     playerVars: { 'loop': 1, 'playlist': 'B1go9DPd_xg' },
     events: {
-      'onReady': (e) => {
+      'onReady': () => {
         playerReady = true;
-        player.setVolume(userVolume); // 準備完了後に反映
+        player.unMute();
+        player.setVolume(userVolume);
       }
     }
   });
@@ -150,12 +151,14 @@ function onYouTubeIframeAPIReady() {
 
 function toggleBGM(){
   const btn = document.getElementById("bgmBtn");
-  if(!playerReady){ return; }
-
+  if(!playerReady){
+    alert("BGM is still loading, please try again in a moment.");
+    return;
+  }
   const state = player.getPlayerState();
   if(state !== YT.PlayerState.PLAYING){
-    player.unMute();              // 念のためミュート解除
-    player.setVolume(userVolume); // 再生前に希望音量を適用
+    player.unMute();
+    player.setVolume(userVolume);
     player.playVideo();
     btn.classList.add("active");
     btn.innerText = "🎵 BGM Playing...";
@@ -170,8 +173,6 @@ function toggleBGM(){
 function setUserVolume(val){
   userVolume = Math.max(0, Math.min(100, Number(val)));
   document.getElementById('volumeVal').innerText = userVolume + '%';
-
-  // ダッキング中は即座に反映せず、通常時のみ反映
   if(playerReady && !isDucking){
     player.setVolume(userVolume);
   }
